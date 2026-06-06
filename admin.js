@@ -1,19 +1,30 @@
-async function hash(text) {
-  const msg = new TextEncoder().encode(text);
-  const hashBuffer = await crypto.subtle.digest("SHA-256", msg);
-  return [...new Uint8Array(hashBuffer)].map(b=>b.toString(16).padStart(2,"0")).join("");
-}
+// ==========================
+// SIMPLE ADMIN LOGIN PTAC
+// ==========================
 
-async function login() {
-  let u = document.getElementById("user").value;
-  let p = document.getElementById("pass").value;
+function login() {
+  let user = document.getElementById("user").value;
+  let pass = document.getElementById("pass").value;
 
-  let hp = await hash(p);
+  // 🔐 SET LOGIN (boleh tukar sini)
+  const ADMIN_USER = "admin";
+  const ADMIN_PASS = "1234";
 
-  if (u === "admin" && p === "ptac2026") {
-    localStorage.setItem("admin", "true");
-    window.location.href = "dashboard.html";
+  if (user === ADMIN_USER && pass === ADMIN_PASS) {
+
+    document.getElementById("msg").innerHTML =
+      "<p style='color:green'>Login success!</p>";
+
+    // simpan session
+    localStorage.setItem("ptac_admin", "true");
+
+    // redirect ke dashboard
+    setTimeout(() => {
+      window.location.href = "dashboard.html";
+    }, 1000);
+
   } else {
-    document.getElementById("msg").innerText = "Login gagal";
+    document.getElementById("msg").innerHTML =
+      "<p style='color:red'>Login gagal!</p>";
   }
 }
