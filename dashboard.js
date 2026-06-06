@@ -1,38 +1,38 @@
-let data = JSON.parse(localStorage.getItem("ptac")) || [];
+const API_URL = "https://script.google.com/macros/s/AKfycbxtVJy6SuyPMpR1YavOTwoMbx5hM4pzHMcQG17Mmsa_2sGjLf4iUr4jEI-DVqFRz8a-/exec";
 
-function load() {
-  let hadir = data.filter(d => d.status === "hadir").length;
-  let kosong = data.filter(d => d.status === "kosong").length;
+let data = [];
 
-  document.getElementById("stats").innerHTML = `
-    <p>Hadir: ${hadir}</p>
-    <p>Kosong: ${kosong}</p>
-  `;
+async function load() {
+  try {
+    let res = await fetch(API_URL);
+    data = await res.json();
 
-  let table = "<tr><th>Lot</th><th>Owner</th><th>Status</th></tr>";
+    let hadir = data.filter(d => d.status === "hadir").length;
+    let kosong = data.filter(d => d.status === "kosong").length;
 
-  data.forEach(d => {
-    table += `<tr>
-      <td>${d.lot}</td>
-      <td>${d.owner}</td>
-      <td>${d.status}</td>
-    </tr>`;
-  });
+    document.getElementById("stats").innerHTML = `
+      <p>Hadir: ${hadir}</p>
+      <p>Kosong: ${kosong}</p>
+    `;
 
-  document.getElementById("table").innerHTML = table;
+    let table = "<tr><th>Lot</th><th>Owner</th><th>Status</th></tr>";
+
+    data.forEach(d => {
+      table += `
+        <tr>
+          <td>${d.lot}</td>
+          <td>${d.owner}</td>
+          <td>${d.status}</td>
+        </tr>
+      `;
+    });
+
+    document.getElementById("table").innerHTML = table;
+
+  } catch (err) {
+    console.log("Error load data:", err);
+  }
 }
 
-setInterval(load, 2000);
+setInterval(load, 5000);
 load();
-
-function exportExcel() {
-  let ws = XLSX.utils.json_to_sheet(data);
-  let wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "PTAC");
-  XLSX.writeFile(wb, "ptac-data.xlsx");
-}
-
-function resetData() {
-  localStorage.clear();
-  location.reload();
-}
