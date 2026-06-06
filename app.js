@@ -1,92 +1,109 @@
-let lots = JSON.parse(localStorage.getItem("ptac")) || [];
+// ==========================
+// PTAC SYSTEM - GOOGLE SHEETS VERSION
+// ==========================
 
-if (lots.length === 0) {
-  lots = [
-    {lot:1, owner:"Kosong", status:"empty"},
-    {lot:2, owner:"Kosong", status:"empty"},
-    {lot:3, owner:"Arrayyan Bakery", status:"occupied"},
-    {lot:4, owner:"Kosong", status:"empty"},
-    {lot:5, owner:"Nurul Jannah", status:"occupied"},
-    {lot:6, owner:"Zaidi", status:"occupied"},
-    {lot:7, owner:"Nurfazirah", status:"occupied"},
-    {lot:8, owner:"Kosong", status:"empty"},
-    {lot:9, owner:"Jannah", status:"occupied"},
-    {lot:10, owner:"Noratieka", status:"occupied"},
-    {lot:11, owner:"Nursiah", status:"occupied"},
-    {lot:12, owner:"Minggo", status:"occupied"},
-    {lot:13, owner:"DG Ambah", status:"occupied"},
-    {lot:14, owner:"HJH Sarif", status:"occupied"},
-    {lot:15, owner:"Dewi", status:"occupied"},
-    {lot:16, owner:"Musri", status:"occupied"},
-    {lot:17, owner:"Jessi", status:"occupied"},
-    {lot:18, owner:"Korlan", status:"occupied"},
-    {lot:19, owner:"Kosong", status:"empty"},
-    {lot:20, owner:"Syamsizul", status:"occupied"},
-    {lot:21, owner:"Mimi", status:"occupied"},
-    {lot:22, owner:"Margaretha", status:"occupied"},
-    {lot:23, owner:"Alex", status:"occupied"},
-    {lot:24, owner:"Martha", status:"occupied"},
-    {lot:25, owner:"Sitti Sham", status:"occupied"},
-    {lot:26, owner:"Ginina", status:"occupied"},
-    {lot:27, owner:"Jessy Nait", status:"occupied"},
-    {lot:28, owner:"Helen", status:"occupied"},
-    {lot:29, owner:"Jessy Nait", status:"occupied"},
-    {lot:30, owner:"Welter", status:"occupied"},
-    {lot:31, owner:"Justin Siangli", status:"occupied"},
-    {lot:32, owner:"Tingkun", status:"occupied"},
-    {lot:33, owner:"Laminah", status:"occupied"},
-    {lot:34, owner:"Sinim", status:"occupied"},
-    {lot:35, owner:"Justin Ringgingon", status:"occupied"},
-    {lot:36, owner:"Ahmad Rushdi", status:"occupied"},
-    {lot:37, owner:"Johan", status:"occupied"},
-    {lot:38, owner:"Norsyuhadah", status:"occupied"},
-    {lot:39, owner:"Kosong", status:"empty"},
-    {lot:40, owner:"John", status:"occupied"},
-    {lot:41, owner:"Radsman", status:"occupied"},
-    {lot:42, owner:"John", status:"occupied"},
-    {lot:43, owner:"Dana", status:"occupied"},
-    {lot:44, owner:"HJH Amaliah", status:"occupied"},
-    {lot:45, owner:"Lamoni", status:"occupied"},
-    {lot:47, owner:"Suzie", status:"occupied"},
-    {lot:48, owner:"HJ Sudin", status:"occupied"},
-    {lot:49, owner:"Suzie", status:"occupied"},
-    {lot:50, owner:"Raini", status:"occupied"},
-    {lot:51, owner:"Shima", status:"occupied"},
-    {lot:52, owner:"Kosong", status:"empty"},
-    {lot:53, owner:"Stanley", status:"occupied"},
-    {lot:54, owner:"Almalin", status:"occupied"},
-    {lot:55, owner:"Siti Ruhaidazuatiqah", status:"occupied"},
-    {lot:56, owner:"Kosong", status:"empty"},
-    {lot:57, owner:"Siti Ruhaidazuatiqah", status:"occupied"},
-    {lot:58, owner:"Kosong", status:"empty"},
-    {lot:59, owner:"Kosong", status:"empty"},
-    {lot:60, owner:"Kosong", status:"empty"},
-    {lot:61, owner:"Kosong", status:"empty"}
-  ];
-  localStorage.setItem("ptac", JSON.stringify(lots));
+const API_URL = "https://script.google.com/macros/s/AKfycbxtVJy6SuyPMpR1YavOTwoMbx5hM4pzHMcQG17Mmsa_2sGjLf4iUr4jEI-DVqFRz8a-/exec";
+
+let lots = [];
+let selectedLot = null;
+
+// ==========================
+// LOAD DATA FROM GOOGLE SHEETS
+// ==========================
+async function loadLots() {
+  try {
+    let res = await fetch(API_URL);
+    lots = await res.json();
+
+    renderDropdown();
+  } catch (err) {
+    console.log("Load error:", err);
+    document.getElementById("result").innerText = "Error load data";
+  }
 }
 
-let select = document.getElementById("lotSelect");
-lots.forEach(l => {
-  let opt = document.createElement("option");
-  opt.value = l.lot;
-  opt.innerText = "Lot " + l.lot + " - " + l.owner;
-  select.appendChild(opt);
+// ==========================
+// RENDER DROPDOWN LOT
+// ==========================
+function renderDropdown() {
+  let select = document.getElementById("lotSelect");
+  select.innerHTML = "";
+
+  lots.forEach(l => {
+    let opt = document.createElement("option");
+    opt.value = l.lot;
+
+    opt.innerText = `Lot ${l.lot} - ${l.owner} [${l.status}]`;
+
+    select.appendChild(opt);
+  });
+
+  selectedLot = select.value;
+}
+
+// ==========================
+// SELECT CHANGE EVENT
+// ==========================
+document.addEventListener("DOMContentLoaded", () => {
+  let select = document.getElementById("lotSelect");
+
+  select.addEventListener("change", () => {
+    selectedLot = select.value;
+  });
 });
 
-function hadir() {
-  let lot = select.value;
-  let data = lots.find(l => l.lot == lot);
-  data.status = "hadir";
-  data.time = new Date().toISOString();
-  localStorage.setItem("ptac", JSON.stringify(lots));
+// ==========================
+// HADIR ACTION
+// ==========================
+async function hadir() {
+  if (!selectedLot) return;
+
+  await updateStatus(selectedLot, "hadir");
+
   document.getElementById("result").innerText = "HADIR direkod!";
+
+  await loadLots();
 }
 
-function tidakHadir() {
-  let lot = select.value;
-  let data = lots.find(l => l.lot == lot);
-  data.status = "kosong";
-  localStorage.setItem("ptac", JSON.stringify(lots));
+// ==========================
+// TIDAK HADIR / KOSONG ACTION
+// ==========================
+async function tidakHadir() {
+  if (!selectedLot) return;
+
+  await updateStatus(selectedLot, "kosong");
+
   document.getElementById("result").innerText = "DITANDA KOSONG!";
+
+  await loadLots();
 }
+
+// ==========================
+// UPDATE TO GOOGLE SHEETS
+// ==========================
+async function updateStatus(lot, status) {
+  try {
+    await fetch(API_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        lot: lot,
+        status: status
+      })
+    });
+  } catch (err) {
+    console.log("Update error:", err);
+  }
+}
+
+// ==========================
+// AUTO REFRESH DATA (REAL-TIME)
+// ==========================
+setInterval(loadLots, 5000);
+
+// ==========================
+// INIT
+// ==========================
+loadLots();
