@@ -1,22 +1,36 @@
 <!DOCTYPE html>
-<html>
+<html lang="ms">
 <head>
-  <title>PTAC Check-In</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>PTAC Check-In System</title>
+
   <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
-<div class="container">
-  <h2>PTAC Usahawan Check-In</h2>
+  <div class="container">
+    <h2>PTAC Usahawan Check-In</h2>
 
-  <select id="lotSelect"></select>
+    <!-- LOT DROPDOWN -->
+    <select id="lotSelect">
+      <option>Loading data...</option>
+    </select>
 
-  <button onclick="hadir()">HADIR</button>
-  <button onclick="tidakHadir()">TIDAK HADIR</button>
+    <!-- BUTTONS -->
+    <div class="btn-group">
+      <button onclick="hadir()">HADIR</button>
+      <button onclick="tidakHadir()">TIDAK HADIR</button>
+    </div>
 
-  <div id="result"></div>
-</div>
+    <!-- RESULT -->
+    <div id="result"></div>
+  </div>
 
-<script src="app.js"></script>
+  <!-- APP SCRIPT -->
+  <script src="app.js"></script>
+
 </body>
 </html>
