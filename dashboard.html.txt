@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>PTAC Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="container">
+  <h2>LIVE DASHBOARD PTAC</h2>
+
+  <button onclick="exportExcel()">Export Excel</button>
+  <button onclick="resetData()">Reset</button>
+
+  <div id="stats"></div>
+  <table id="table"></table>
+</div>
+
+<script src="xlsx.full.min.js"></script>
+<script src="dashboard.js"></script>
+</body>
+</html>
