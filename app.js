@@ -1,18 +1,15 @@
-// ==========================
-// PTAC SYSTEM - GOOGLE SHEETS VERSION
-// ==========================
-
-const API_URL = "https://script.google.com/macros/s/AKfycbxtVJy6SuyPMpR1YavOTwoMbx5hM4pzHMcQG17Mmsa_2sGjLf4iUr4jEI-DVqFRz8a-/exec";
+const API_URL =
+  "https://script.google.com/macros/s/AKfycbxtVJy6SuyPMpR1YavOTwoMbx5hM4pzHMcQG17Mmsa_2sGjLf4iUr4jEI-DVqFRz8a-/exec";
 
 let lots = [];
 let selectedLot = null;
 
 // ==========================
-// LOAD DATA FROM GOOGLE SHEETS
+// LOAD DATA (LIVE)
 // ==========================
 async function loadLots() {
   try {
-    let res = await fetch(API_URL);
+    const res = await fetch(API_URL + "?t=" + Date.now()); // 🔥 bypass cache
     lots = await res.json();
 
     renderDropdown();
@@ -23,29 +20,31 @@ async function loadLots() {
 }
 
 // ==========================
-// RENDER DROPDOWN LOT
+// RENDER DROPDOWN
 // ==========================
 function renderDropdown() {
-  let select = document.getElementById("lotSelect");
+  const select = document.getElementById("lotSelect");
   select.innerHTML = "";
 
   lots.forEach(l => {
-    let opt = document.createElement("option");
+    const opt = document.createElement("option");
     opt.value = l.lot;
-
-    opt.innerText = `Lot ${l.lot} - ${l.owner} [${l.status}]`;
-
+    opt.textContent = `Lot ${l.lot} - ${l.owner} [${l.status}]`;
     select.appendChild(opt);
   });
 
-  selectedLot = select.value;
+  // 🔥 auto select first value
+  if (lots.length > 0) {
+    selectedLot = lots[0].lot;
+    select.value = selectedLot;
+  }
 }
 
 // ==========================
-// SELECT CHANGE EVENT
+// EVENT LISTENER
 // ==========================
 document.addEventListener("DOMContentLoaded", () => {
-  let select = document.getElementById("lotSelect");
+  const select = document.getElementById("lotSelect");
 
   select.addEventListener("change", () => {
     selectedLot = select.value;
@@ -53,57 +52,48 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // ==========================
-// HADIR ACTION
+// HADIR
 // ==========================
 async function hadir() {
-  if (!selectedLot) return;
-
-  await updateStatus(selectedLot, "hadir");
-
-  document.getElementById("result").innerText = "HADIR direkod!";
-
-  await loadLots();
+  await updateStatus("hadir");
 }
 
 // ==========================
-// TIDAK HADIR / KOSONG ACTION
+// TIDAK HADIR
 // ==========================
 async function tidakHadir() {
-  if (!selectedLot) return;
-
-  await updateStatus(selectedLot, "kosong");
-
-  document.getElementById("result").innerText = "DITANDA KOSONG!";
-
-  await loadLots();
+  await updateStatus("kosong");
 }
 
 // ==========================
-// UPDATE TO GOOGLE SHEETS
+// UPDATE TO SHEETS
 // ==========================
-async function updateStatus(lot, status) {
+async function updateStatus(status) {
+  if (!selectedLot) return;
+
   try {
     await fetch(API_URL, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
       body: JSON.stringify({
-        lot: lot,
+        lot: selectedLot,
         status: status
       })
     });
+
+    document.getElementById("result").innerText =
+      status.toUpperCase() + " direkod!";
+
+    // 🔥 force reload latest data
+    await loadLots();
   } catch (err) {
     console.log("Update error:", err);
   }
 }
 
 // ==========================
-// AUTO REFRESH DATA (REAL-TIME)
+// AUTO REFRESH
 // ==========================
 setInterval(loadLots, 5000);
 
-// ==========================
 // INIT
-// ==========================
 loadLots();
